@@ -1,0 +1,9 @@
+# created by virtualenv automatically
+.env
+lib/
+chroma/*
+data/*
+.DS_Store
+bin/
+share/
+__pycache__/
