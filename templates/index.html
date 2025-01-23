@@ -3,23 +3,50 @@
 	<body>
 		<div class="container">
 			<h1>RAG Query Interface</h1>
-			<form method="POST" action="/query">
-				<input type="text" name="query" placeholder="Enter your query here" value="{{ query if query else '' }}">
-				<button type="submit">Submit Query</button>
-			</form>
-			
-			{% if response %}
-			<div class="response">
+			<form method="POST" action="/query" id="queryForm">
+                <input type="text" name="query" placeholder="Enter your query here" value="{{ query if query else '' }}">
+                <button type="submit">Submit Query</button>
+            </form>
+
+            <script>
+                document.getElementById('queryForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(this);
+                    
+                    fetch('/query', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Handle the response here
+                        // You'll need to update your backend to return JSON
+						console.log(data);
+						document.getElementById('response-text').textContent = data.response;
+						document.getElementById('sources').innerHTML = data.sources.map(source => `<div class="source"><h3>Source ${source.id}:</h3><p>${source.page_content}</p></div>`).join('');
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            </script>
+
+			<div id="response">
+				<h2>Response</h2>
+				<p id="response-text"></p>
+				<h2>Sources</h2>
+				<div id="sources"></div>
+			</div>
+            
+            <!-- {% if response %}
 				<h2>Response:</h2>
-				<p>{{ response }}</p>
-				{% for source in sources %}
+				<p>{{ response.response }}</p>
+				{% for source in response.sources %}
 					<div class="source">
 						<h3>Source {{ loop.index }}:</h3>
 						<p>{{ source.page_content }}</p>
 					</div>
 				{% endfor %}
 			</div>
-			{% endif %}
+			{% endif %} -->
 		</div>
 	</body>
 </html>

@@ -1,9 +1,12 @@
+
+
 import argparse
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
-
+import os
 from get_embedding_function import get_embedding_function
+import logging
 
 CHROMA_PATH = "chroma"
 
@@ -28,7 +31,40 @@ def main():
 
 
 def query_rag(query_text: str):
-	# Prepare the DB.
+	base_url = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434')
+	logging.info(f"Using Ollama base URL: {base_url}")
+	try:
+		model = OllamaLLM(
+			model="mistral",
+			base_url=base_url
+		)
+		embedding_function = get_embedding_function()
+		db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+
+		# Search the DB.
+		results = db.similarity_search_with_score(query_text, k=5)
+		response_text = model.invoke(query_text)
+		print("\nAI Response:")
+		print(response_text)
+		print("\n\n\n")
+		print("\nSources Used:")
+		for i, (doc, score) in enumerate(results, 1):
+			print(f"\nSource {i}:")
+			print(f"- ID: {doc.metadata.get('id', 'Unknown')}")
+			print(f"- Similarity Score: {score:.2f}")
+			print(f"- Content:")
+			print("---")
+			print(doc.page_content)
+			print("---")
+			print("\n")
+		return {
+			"text": response_text,
+			"sources": [{"id": doc.metadata.get("id", None), "page_content": doc.page_content, "score": score} for doc, score in results]
+		}
+	except Exception as e:
+		logging.error(f"Ollama error: {str(e)}")
+		raise
+	"""# Prepare the DB.
 	embedding_function = get_embedding_function()
 	db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
 
@@ -40,7 +76,13 @@ def query_rag(query_text: str):
 	prompt = prompt_template.format(context=context_text, question=query_text)
 	# print(prompt)
 
-	model = OllamaLLM(model="mistral")
+	#model = OllamaLLM(model="mistral")
+	#model = OllamaLLM(model="http://ollama:11434/v1/models/mistral")
+	#model = OllamaLLM(model="http://ollama-container:11434/v1/models/mistral")
+	model = OllamaLLM(
+		model="mistral",
+		base_url=base_url
+	)
 	response_text = model.invoke(prompt)
 	print("\nAI Response:")
 	print(response_text)
@@ -58,7 +100,7 @@ def query_rag(query_text: str):
 	return {
 		"text": response_text,
 		"sources": [{"id": doc.metadata.get("id", None), "page_content": doc.page_content, "score": score} for doc, score in results]
-	}
+	}"""
 
 
 if __name__ == "__main__":
