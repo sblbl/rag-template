@@ -10,6 +10,7 @@ from query_data import query_rag
 import logging
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Create a templates directory and mount it
 templates = Jinja2Templates(directory="templates")

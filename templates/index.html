@@ -1,52 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="/static/style.css">
+	</head>
 	<body>
-		<div class="container">
-			<h1>RAG Query Interface</h1>
+		<main>
+			<h1>Archivives</h1>
 			<form method="POST" action="/query" id="queryForm">
-                <input type="text" name="query" placeholder="Enter your query here" value="{{ query if query else '' }}">
-                <button type="submit">Submit Query</button>
-            </form>
-
-            <script>
-                document.getElementById('queryForm').addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    const formData = new FormData(this);
-                    
-                    fetch('/query', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Handle the response here
-                        // You'll need to update your backend to return JSON
-						console.log(data);
-						document.getElementById('response-text').textContent = data.response;
-						document.getElementById('sources').innerHTML = data.sources.map(source => `<div class="source"><h3>Source ${source.id}:</h3><p>${source.page_content}</p></div>`).join('');
-                    })
-                    .catch(error => console.error('Error:', error));
-                });
-            </script>
-
-			<div id="response">
-				<h2>Response</h2>
-				<p id="response-text"></p>
-				<h2>Sources</h2>
-				<div id="sources"></div>
+				<label for="query">Enter your query</label>
+				<input type="text" name="query" placeholder="What's the purpose of an archive?" value="{{ query if query else '' }}">
+				<button type="submit">Submit Query</button>
+			</form>
+			<div id="loading" class="hidden">
+				<p>Loading...</p>
 			</div>
-            
-            <!-- {% if response %}
-				<h2>Response:</h2>
-				<p>{{ response.response }}</p>
-				{% for source in response.sources %}
-					<div class="source">
-						<h3>Source {{ loop.index }}:</h3>
-						<p>{{ source.page_content }}</p>
-					</div>
-				{% endfor %}
+			<div id="response" class="hidden">
+				<div class="slot-container" id="response-container">
+					<h3>Response</h3>
+					<p id="response-text"></p>
+				</div>
+				<div class="slot-container" id="sources-container">
+					<h3>Sources</h3>
+					<div id="sources"></div>
+				</div>
 			</div>
-			{% endif %} -->
-		</div>
+		</main>
 	</body>
+	<script src="/static/script.js"></script>
 </html>

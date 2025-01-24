@@ -43,7 +43,11 @@ def query_rag(query_text: str):
 
 		# Search the DB.
 		results = db.similarity_search_with_score(query_text, k=5)
-		response_text = model.invoke(query_text)
+		context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
+		prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+		prompt = prompt_template.format(context=context_text, question=query_text)
+		#response_text = model.invoke(query_text)
+		response_text = model.invoke(prompt)
 		print("\nAI Response:")
 		print(response_text)
 		print("\n\n\n")
